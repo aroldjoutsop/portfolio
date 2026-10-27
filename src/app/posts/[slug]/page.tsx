@@ -6,7 +6,7 @@ import { postsConfig } from "@/config/posts";
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
-const SITE_URL = 'https://aroldjoutsop.vercel.app';
+const SITE_URL = 'https://aroldjoutsop.tech';
 
 // Generate static paths
 export async function generateStaticParams() {

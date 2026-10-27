@@ -10,7 +10,7 @@ import WhatsAppButton from '@/components/WhatsAppButton'
 
 const inter = Inter({ subsets: ["latin"] });
 
-const SITE_URL = 'https://aroldjoutsop.vercel.app';
+const SITE_URL = 'https://aroldjoutsop.tech';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -97,6 +97,7 @@ const personJsonLd = {
   ],
   knowsAbout: ['React', 'Next.js', 'Node.js', 'TypeScript', 'Flutter', 'DevOps', 'CI/CD', 'Référencement SEO', 'Entrepreneuriat'],
   sameAs: [
+    'https://www.wikidata.org/wiki/Q141694776',
     'https://github.com/aroldjoutsop',
     'https://www.linkedin.com/in/arol-djoutsop-5175182a2',
     'https://www.facebook.com/share/1UgVtAeYqP/',

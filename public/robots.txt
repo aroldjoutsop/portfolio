@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://aroldjoutsop.vercel.app/sitemap.xml
+Sitemap: https://aroldjoutsop.tech/sitemap.xml

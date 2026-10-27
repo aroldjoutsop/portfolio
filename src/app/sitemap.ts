@@ -3,7 +3,7 @@ import { postsConfig } from '@/config/posts';
 
 export const dynamic = 'force-static';
 
-const SITE_URL = 'https://aroldjoutsop.vercel.app';
+const SITE_URL = 'https://aroldjoutsop.tech';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const home: MetadataRoute.Sitemap = [
