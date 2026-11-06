@@ -29,7 +29,7 @@ export const fr = {
     description: [
       "Ingénieur logiciel et développeur full-stack, je conçois des applications web et mobiles pensées pour durer — rapides, robustes et simples à prendre en main.",
       "J'accompagne startups, PME et porteurs de projet de la première maquette jusqu'à la mise en production : React et Node.js côté web, Flutter sur mobile, et une automatisation soignée (CI/CD, cloud & VPS) pour livrer vite et sans mauvaise surprise. Ouvert au télétravail et aux missions freelance.",
-      "Je fais aussi du référencement (SEO) : je rends les entreprises visibles sur Google et booste leur présence en ligne.",
+      "Je fais aussi du SEO et du GEO (Generative Engine Optimization) : je rends les marques visibles sur Google et dans les réponses des moteurs d'IA comme ChatGPT, Gemini, Perplexity et Claude.",
     ],
     btnAbout: "À propos",
     btnPosts: "Voir les articles",
@@ -46,6 +46,8 @@ export const fr = {
       "State management",
       "CI/CD",
       "SEO / Référencement web",
+      "GEO / Visibilité dans les LLM",
+      "Données structurées (Schema.org)",
       "UI/UX Design",
       "Authentification (JWT / OAuth)",
       "Paiement en ligne",
@@ -79,10 +81,10 @@ export const fr = {
         points: ["Flutter (iOS & Android)", "Paiement Mobile Money", "Publication sur les stores"],
       },
       {
-        title: "SEO & Visibilité",
+        title: "SEO & GEO (visibilité IA)",
         description:
-          "Je rends votre entreprise visible sur Google et booste votre présence en ligne pour attirer plus de clients.",
-        points: ["Référencement Google", "Performance & Core Web Vitals", "Visibilité & croissance"],
+          "Je rends votre marque visible sur Google et citée dans les réponses des moteurs d'IA (ChatGPT, Gemini, Perplexity) : audit, contenu, données structurées et suivi.",
+        points: ["Audit SEO technique & éditorial", "GEO : présence dans les LLM", "Schema.org & suivi des performances"],
       },
       {
         title: "Déploiement & Maintenance",
@@ -93,6 +95,7 @@ export const fr = {
     ],
     ctaText: "Un projet en tête ?",
     ctaButton: "Parlons-en",
+    geoLink: "Découvrir mon offre SEO & GEO",
   },
   process: {
     title: "Comment je travaille",

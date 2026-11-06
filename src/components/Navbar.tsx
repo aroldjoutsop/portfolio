@@ -110,7 +110,7 @@ export default function Navbar() {
             <ThemeToggle />
 
             <Link
-              href="#contact"
+              href="/#contact"
               className="shine hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-brand-500/30 hover:bg-brand-600 hover:scale-[1.03] transition-all duration-200"
             >
               {t.header.contactBtn}
@@ -155,7 +155,7 @@ export default function Navbar() {
               );
             })}
             <Link
-              href="#contact"
+              href="/#contact"
               onClick={() => setIsMenuOpen(false)}
               className="mt-1 inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition-colors"
             >
