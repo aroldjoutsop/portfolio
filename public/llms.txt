@@ -1,0 +1,28 @@
+# Arol Djoutsop
+
+> Arol Djoutsop (Arol Sorelle Djoutsop, aussi connu sous le nom Arol Dejesus) est un ingénieur logiciel, développeur full-stack web et mobile et consultant SEO & GEO basé à Yaoundé, au Cameroun. Il conçoit des applications web (React, Next.js, Node.js, TypeScript) et mobiles (Flutter, React Native), intègre les paiements Mobile Money, et aide les marques à être visibles sur Google et dans les réponses des moteurs d'IA générative. Il travaille en freelance, à distance, en français et en anglais.
+
+## Identité
+
+- Nom : Arol Djoutsop. Variantes : Arol Sorelle Djoutsop, Arol Dejesus.
+- Métier : Software Engineer, développeur full-stack (web & mobile), consultant SEO & GEO, UX/UI designer.
+- Localisation : Yaoundé, Cameroun. Missions à distance dans le monde entier.
+- Formation : Licence en Génie Logiciel, IAI-Cameroun (2021–2024).
+- Entreprises : co-fondateur de FOLIO DISTICARET ; développeur chez FOLIOTSA depuis 2021 (projet Folio E-School).
+- Profils officiels : https://github.com/aroldjoutsop · https://www.linkedin.com/in/arol-djoutsop-5175182a2 · https://www.wikidata.org/wiki/Q141694776
+
+## Services
+
+- [SEO & GEO](https://aroldjoutsop.tech/seo-geo/) : optimisation GEO et visibilité dans les LLM, stratégie de contenu adaptée à l'IA, SEO technique et éditorial, recherche de mots-clés et d'intentions, données structurées Schema.org, mesure de la visibilité (positions, trafic, mentions, présence dans les réponses des IA), veille.
+- [Développement web](https://aroldjoutsop.tech/#services) : sites et applications React / Next.js, API Node.js, e-commerce, SaaS.
+- [Développement mobile](https://aroldjoutsop.tech/#services) : applications Flutter iOS et Android, paiement Mobile Money (MTN MoMo, Orange Money), publication sur les stores.
+- [Déploiement & maintenance](https://aroldjoutsop.tech/#services) : cloud et VPS, CI/CD, automatisation.
+
+## Projets représentatifs
+
+- [Projets](https://aroldjoutsop.tech/#projects) : Bal UAO et VotezPCO (vote en ligne avec paiement Mobile Money, Université Alassane Ouattara, Côte d'Ivoire), Folio E-School (plateforme e-learning, microservices), NKWEL (place de marché mobile et web), Saah Auto (application de vente automobile), Postora (SaaS de gestion des réseaux sociaux).
+
+## Contact
+
+- [Formulaire de contact](https://aroldjoutsop.tech/#contact)
+- E-mail : aroldjoutsop19@gmail.com

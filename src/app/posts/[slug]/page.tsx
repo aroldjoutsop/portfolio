@@ -31,6 +31,9 @@ export async function generateMetadata({
     title: post.title,
     description: post.description,
     alternates: { canonical: url },
+    // Articles hérités du template (auteurs fictifs) : exclus de l'index tant
+    // qu'ils ne sont pas remplacés par des articles signés Arol Djoutsop.
+    robots: (post.author as string) === 'Arol Djoutsop' ? undefined : { index: false, follow: true },
     openGraph: {
       type: 'article',
       url,

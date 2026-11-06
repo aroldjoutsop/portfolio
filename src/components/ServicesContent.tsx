@@ -62,6 +62,15 @@ export default function ServicesContent() {
         ))}
       </div>
 
+      <div className="mt-8 text-center">
+        <Link
+          href="/seo-geo/"
+          className="inline-flex items-center gap-1 text-sm font-semibold text-brand-500 hover:underline"
+        >
+          {t.services.geoLink} →
+        </Link>
+      </div>
+
       <Reveal delay={200} className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
         <span className="text-lg font-medium text-neutral-800 dark:text-neutral-200">
           {t.services.ctaText}

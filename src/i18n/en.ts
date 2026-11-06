@@ -29,7 +29,7 @@ export const en: Dictionary = {
     description: [
       "Software engineer and full-stack developer, I build web and mobile applications made to last — fast, robust and easy to use.",
       "I help startups, SMEs and project owners from the first mockup to production: React and Node.js on the web, Flutter on mobile, and careful automation (CI/CD, cloud & VPS) to ship fast without bad surprises. Open to remote work and freelance projects.",
-      "I also do SEO: I make businesses visible on Google and boost their online presence.",
+      "I also do SEO and GEO (Generative Engine Optimization): I make brands visible on Google and in the answers of AI engines such as ChatGPT, Gemini, Perplexity and Claude.",
     ],
     btnAbout: "About",
     btnPosts: "Read articles",
@@ -46,6 +46,8 @@ export const en: Dictionary = {
       "State management",
       "CI/CD",
       "SEO",
+      "GEO / LLM visibility",
+      "Structured data (Schema.org)",
       "UI/UX Design",
       "Authentication (JWT / OAuth)",
       "Online payments",
@@ -79,10 +81,10 @@ export const en: Dictionary = {
         points: ["Flutter (iOS & Android)", "Mobile Money payments", "App store publishing"],
       },
       {
-        title: "SEO & Visibility",
+        title: "SEO & GEO (AI visibility)",
         description:
-          "I make your business visible on Google and boost your online presence to attract more clients.",
-        points: ["Google ranking", "Performance & Core Web Vitals", "Visibility & growth"],
+          "I make your brand visible on Google and cited in AI engine answers (ChatGPT, Gemini, Perplexity): audit, content, structured data and tracking.",
+        points: ["Technical & editorial SEO audit", "GEO: presence in LLMs", "Schema.org & performance tracking"],
       },
       {
         title: "Deployment & Maintenance",
@@ -93,6 +95,7 @@ export const en: Dictionary = {
     ],
     ctaText: "Got a project in mind?",
     ctaButton: "Let's talk",
+    geoLink: "See my SEO & GEO offer",
   },
   process: {
     title: "How I work",

@@ -19,12 +19,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  const posts: MetadataRoute.Sitemap = postsConfig.posts.map((post) => ({
+  const pages: MetadataRoute.Sitemap = [
+    {
+      url: `${SITE_URL}/seo-geo/`,
+      lastModified: new Date('2026-11-06'),
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+  ];
+
+  // Seuls les articles signés par Arol Djoutsop sont proposés à l'indexation.
+  const posts: MetadataRoute.Sitemap = postsConfig.posts
+    .filter((post) => (post.author as string) === 'Arol Djoutsop')
+    .map((post) => ({
     url: `${SITE_URL}/posts/${post.slug.replace('posts/', '')}/`,
     lastModified: new Date(post.date),
     changeFrequency: 'yearly',
     priority: 0.6,
   }));
 
-  return [...home, ...posts];
+  return [...home, ...pages, ...posts];
 }
