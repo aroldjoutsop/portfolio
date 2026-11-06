@@ -199,7 +199,13 @@ export const en: Dictionary = {
       error: "Oops, something went wrong. Try again or email me directly.",
     },
   },
+  whatsapp: {
+    label: "Contact me on WhatsApp",
+    message: "Hi Arol, I saw your portfolio and would like to talk with you.",
+    projectMessage: "Hi Arol, I have a project and would like to get started with you.",
+  },
   footer: {
+    copyright: "© 2026 Arol Djoutsop. All rights reserved.",
     signatureLabel: "Signature",
     headlinePre: "I turn ideas into",
     headlineGreen: "web & mobile",

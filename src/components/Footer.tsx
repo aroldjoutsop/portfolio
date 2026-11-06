@@ -142,7 +142,7 @@ export default function Footer() {
 
         {/* Bottom line */}
         <div className="mt-10 pt-5 border-t border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-neutral-500">
-          <p>{globalConfig.footer.copyright}</p>
+          <p>{t.footer.copyright}</p>
           <p>{t.footer.builtWith}</p>
         </div>
       </div>

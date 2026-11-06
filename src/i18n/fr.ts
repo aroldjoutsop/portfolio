@@ -200,7 +200,13 @@ export const fr = {
       error: "Oups, une erreur est survenue. Réessaie ou écris-moi directement par email.",
     },
   },
+  whatsapp: {
+    label: "Me contacter sur WhatsApp",
+    message: "Bonjour Arol, j'ai vu votre portfolio et j'aimerais échanger avec vous.",
+    projectMessage: "Bonjour Arol, j'ai un projet et j'aimerais démarrer avec vous.",
+  },
   footer: {
+    copyright: "© 2026 Arol Djoutsop. Tous droits réservés.",
     signatureLabel: "Signature",
     headlinePre: "Je transforme des idées en applications",
     headlineGreen: "web & mobiles",

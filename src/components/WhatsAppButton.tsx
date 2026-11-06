@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { contactConfig } from '@/config/contact';
+import { useT } from '@/i18n/LanguageContext';
 
 export default function WhatsAppButton() {
-  const message = encodeURIComponent(
-    "Bonjour Arol, j'ai vu votre portfolio et j'aimerais échanger avec vous.",
-  );
+  const t = useT();
+  const message = encodeURIComponent(t.whatsapp.message);
   const whatsappUrl = `https://wa.me/${contactConfig.phoneHref.replace('+', '')}?text=${message}`;
 
   return (
@@ -15,8 +15,8 @@ export default function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       className="group fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-[#25D366] rounded-full shadow-lg shadow-[#25D366]/30 hover:bg-[#128C7E] transition-all duration-300 hover:scale-110 animate-fade-up"
-      aria-label="Me contacter sur WhatsApp"
-      title="Me contacter sur WhatsApp"
+      aria-label={t.whatsapp.label}
+      title={t.whatsapp.label}
     >
       <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-60 animate-ping [animation-duration:2.5s] group-hover:opacity-0" aria-hidden="true" />
       <svg

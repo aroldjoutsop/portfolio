@@ -7,9 +7,7 @@ import { contactConfig } from '@/config/contact';
 
 export default function FinalCta() {
   const t = useT();
-  const message = encodeURIComponent(
-    "Bonjour Arol, j'ai un projet et j'aimerais démarrer avec vous."
-  );
+  const message = encodeURIComponent(t.whatsapp.projectMessage);
   const whatsappUrl = `https://wa.me/${contactConfig.phoneHref.replace('+', '')}?text=${message}`;
 
   return (
