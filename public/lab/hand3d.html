@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hand Tracking 3D</title>
+<style>
+  :root{--bg:#05070b;--fg:#e8eef7;--muted:#8b98ab;--cyan:#4fe3ff;--gold:#ffc94d;--panel:rgba(12,16,24,.72)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
+  #video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);filter:brightness(.55) saturate(.8)}
+  #three,#hud{position:fixed;inset:0;width:100%;height:100%}
+  #hud{pointer-events:none}
+  .panel{position:fixed;top:16px;left:16px;width:240px;background:var(--panel);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;font-size:13px}
+  .panel h1{font-size:14px;letter-spacing:.04em;margin-bottom:2px}
+  .panel .sub{color:var(--muted);font-size:11px;margin-bottom:12px}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid rgba(255,255,255,.06)}
+  .row span:first-child{color:var(--muted)}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#555;margin-right:6px}
+  .dot.on{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+  .g{display:flex;gap:8px;padding:5px 0;color:var(--muted);font-size:12px}
+  .g b{color:var(--fg);font-weight:600;min-width:86px}
+  .g.active b{color:var(--gold)}
+  #start{position:fixed;inset:0;display:grid;place-items:center;background:rgba(5,7,11,.85);z-index:10}
+  #start .box{text-align:center;max-width:360px;padding:24px}
+  #start h2{font-size:22px;margin-bottom:8px}
+  #start p{color:var(--muted);font-size:14px;margin-bottom:20px;line-height:1.5}
+  button{background:var(--cyan);color:#001018;border:0;border-radius:10px;padding:12px 22px;font-weight:700;font-size:15px;cursor:pointer}
+  button.ghost{background:transparent;color:var(--fg);border:1px solid rgba(255,255,255,.2);margin-top:10px}
+  #model{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid rgba(255,255,255,.08);padding:8px 16px;border-radius:999px;font-size:13px;letter-spacing:.05em}
+  @media (max-width:600px){.panel{width:auto;right:16px;font-size:12px}.g{display:none}}
+</style>
+</head>
+<body>
+<video id="video" playsinline muted></video>
+<canvas id="three"></canvas>
+<canvas id="hud"></canvas>
+
+<div class="panel">
+  <h1>HAND TRACKING 3D</h1>
+  <div class="sub">MediaPipe + Three.js</div>
+  <div class="row"><span>Caméra</span><span><i class="dot" id="camDot"></i><span id="camTxt">off</span></span></div>
+  <div class="row"><span>Mains</span><span id="handsTxt">0</span></div>
+  <div class="row"><span>FPS</span><span id="fpsTxt">–</span></div>
+  <div style="margin-top:10px">
+    <div class="g" id="g-rotate"><b>✋ Main ouverte</b>Rotation</div>
+    <div class="g" id="g-pinch"><b>🤏 Pincer</b>Attraper / déplacer</div>
+    <div class="g" id="g-zoom"><b>🙌 Deux mains</b>Zoom</div>
+    <div class="g" id="g-fist"><b>✊ Poing</b>Modèle suivant</div>
+  </div>
+</div>
+<div id="model">RADIAL ENGINE</div>
+
+<div id="start"><div class="box">
+  <h2>Contrôle 3D par gestes</h2>
+  <p>Autorise la caméra : tes mains pilotent l'objet 3D. Aucune image ne quitte ton appareil.</p>
+  <button id="go">Activer la caméra</button><br>
+  <button class="ghost" id="mouse">Continuer à la souris</button>
+</div></div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { FilesetResolver, HandLandmarker } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+
+/* ---------- Three.js scene ---------- */
+const canvas = document.getElementById('three');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+camera.position.z = 6;
+
+const N = 9000;
+const rand = (a, b) => a + Math.random() * (b - a);
+
+// Procedural point-cloud models (each returns N xyz triples)
+const MODELS = [
+  { name: 'RADIAL ENGINE', gen: () => {
+    const p = [];
+    const push = (x, y, z) => p.push(x, y, z);
+    for (let i = 0; i < N; i++) {
+      const r = Math.random();
+      if (r < 0.18) { // hub (cylinder along z)
+        const a = rand(0, Math.PI * 2), z = rand(-0.7, 0.5);
+        push(Math.cos(a) * 0.45, Math.sin(a) * 0.45, z);
+      } else if (r < 0.75) { // 9 radial cylinders with cooling fins
+        const k = Math.floor(rand(0, 9)), ang = k / 9 * Math.PI * 2;
+        const t = rand(0.45, 1.5), a = rand(0, Math.PI * 2);
+        const fin = (Math.floor(t * 14) % 2 === 0) ? 0.2 : 0.14;
+        const lx = Math.cos(a) * fin, lz = Math.sin(a) * fin;
+        push(Math.cos(ang) * t - Math.sin(ang) * lx, Math.sin(ang) * t + Math.cos(ang) * lx, lz);
+      } else if (r < 0.92) { // propeller (2 twisted blades)
+        const b = Math.random() < 0.5 ? 1 : -1, l = rand(0.1, 2.2), w = rand(-0.12, 0.12) * (1 - l / 2.6);
+        push(w, b * l, 0.75 + w * 0.6);
+      } else { // nose cone
+        const a = rand(0, Math.PI * 2), z = rand(0.5, 0.9), rr = 0.45 * (1 - (z - 0.5) / 0.4);
+        push(Math.cos(a) * rr, Math.sin(a) * rr, z);
+      }
+    }
+    return p;
+  }},
+  { name: 'DNA HELIX', gen: () => {
+    const p = [];
+    for (let i = 0; i < N; i++) {
+      const t = rand(-1, 1), a = t * Math.PI * 4, s = Math.random();
+      if (s < 0.8) {
+        const o = Math.random() < 0.5 ? 0 : Math.PI;
+        p.push(Math.cos(a + o) * 0.8 + rand(-.05, .05), t * 2.2, Math.sin(a + o) * 0.8 + rand(-.05, .05));
+      } else {
+        const tt = Math.round(t * 20) / 20, aa = tt * Math.PI * 4, u = rand(-0.8, 0.8);
+        p.push(Math.cos(aa) * u, tt * 2.2, Math.sin(aa) * u);
+      }
+    }
+    return p;
+  }},
+  { name: 'GALAXY', gen: () => {
+    const p = [];
+    for (let i = 0; i < N; i++) {
+      const arm = Math.floor(rand(0, 3)), r = Math.pow(Math.random(), 0.7) * 2.2;
+      const a = arm / 3 * Math.PI * 2 + r * 2.2 + rand(-0.3, 0.3) / (r + 0.3);
+      p.push(Math.cos(a) * r, rand(-0.08, 0.08) * (2.4 - r), Math.sin(a) * r);
+    }
+    return p;
+  }},
+  { name: 'TORUS KNOT', gen: () => {
+    const p = [];
+    for (let i = 0; i < N; i++) {
+      const t = rand(0, Math.PI * 2), P = 2, Q = 3, rr = 0.6 * Math.cos(Q * t) + 1.2;
+      const cx = rr * Math.cos(P * t), cy = rr * Math.sin(P * t), cz = 0.6 * Math.sin(Q * t);
+      const a = rand(0, Math.PI * 2), s = 0.18;
+      p.push(cx + Math.cos(a) * s, cy + Math.sin(a) * s, cz + rand(-s, s));
+    }
+    return p;
+  }},
+];
+
+// Round glow sprite
+const spr = document.createElement('canvas'); spr.width = spr.height = 64;
+const sg = spr.getContext('2d'), grd = sg.createRadialGradient(32, 32, 0, 32, 32, 32);
+grd.addColorStop(0, 'rgba(255,255,255,1)'); grd.addColorStop(0.3, 'rgba(255,255,255,.6)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
+sg.fillStyle = grd; sg.fillRect(0, 0, 64, 64);
+
+const geo = new THREE.BufferGeometry();
+const pos = new Float32Array(MODELS[0].gen());
+let target = new Float32Array(pos);
+const col = new Float32Array(N * 3);
+const cA = new THREE.Color('#4fe3ff'), cB = new THREE.Color('#ffc94d'), tmp = new THREE.Color();
+for (let i = 0; i < N; i++) { tmp.copy(cA).lerp(cB, Math.random() ** 2); col.set([tmp.r, tmp.g, tmp.b], i * 3); }
+geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+const mat = new THREE.PointsMaterial({ size: 0.045, map: new THREE.CanvasTexture(spr), vertexColors: true,
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+const obj = new THREE.Points(geo, mat);
+scene.add(obj);
+
+let modelIdx = 0;
+const modelEl = document.getElementById('model');
+function nextModel() {
+  modelIdx = (modelIdx + 1) % MODELS.length;
+  target = new Float32Array(MODELS[modelIdx].gen());
+  // scatter a bit for a morph "explosion"
+  for (let i = 0; i < pos.length; i++) pos[i] += rand(-0.6, 0.6);
+  modelEl.textContent = MODELS[modelIdx].name;
+}
+
+// Smoothed state
+const state = { rx: 0.3, ry: 0, tx: 0.3, ty: 0, scale: 1, tScale: 1, px: 0, py: 0, tpx: 0, tpy: 0, spin: true };
+
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  hud.width = w * devicePixelRatio; hud.height = h * devicePixelRatio;
+}
+const hud = document.getElementById('hud'), hctx = hud.getContext('2d');
+addEventListener('resize', resize); resize();
+
+// screen (0..1) -> world on z=0 plane
+function toWorld(nx, ny) {
+  const h = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
+  return [(nx - 0.5) * h * camera.aspect, -(ny - 0.5) * h];
+}
+
+/* ---------- Gesture logic ---------- */
+const d = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+function analyze(lm) {
+  const m = lm.map(p => ({ x: 1 - p.x, y: p.y })); // mirror to match display
+  const palm = [0, 5, 9, 13, 17].reduce((s, i) => ({ x: s.x + m[i].x / 5, y: s.y + m[i].y / 5 }), { x: 0, y: 0 });
+  const size = d(m[0], m[9]);
+  const pinch = d(m[4], m[8]) / size < 0.35;
+  const curl = [8, 12, 16, 20].reduce((s, i) => s + d(m[i], palm), 0) / 4 / size;
+  const fist = curl < 0.75 && !pinch;
+  const open = curl > 1.15 && !pinch;
+  return { m, palm, size, pinch, fist, open, pinchPt: { x: (m[4].x + m[8].x) / 2, y: (m[4].y + m[8].y) / 2 } };
+}
+
+let prevPalm = null, prevTwoDist = null, fistLatch = false, lastFist = 0;
+const gEls = { rotate: g('g-rotate'), pinch: g('g-pinch'), zoom: g('g-zoom'), fist: g('g-fist') };
+function g(id) { return document.getElementById(id); }
+function setActive(k) { for (const [n, el] of Object.entries(gEls)) el.classList.toggle('active', n === k); }
+
+function handleHands(hands) {
+  document.getElementById('handsTxt').textContent = hands.length;
+  let active = null;
+  if (hands.length === 2) {
+    const dist = d(hands[0].palm, hands[1].palm);
+    if (prevTwoDist) state.tScale = THREE.MathUtils.clamp(state.tScale * (dist / prevTwoDist), 0.3, 3);
+    prevTwoDist = dist; prevPalm = null; active = 'zoom';
+  } else prevTwoDist = null;
+
+  if (hands.length === 1) {
+    const h = hands[0];
+    if (h.fist) {
+      active = 'fist';
+      if (!fistLatch && performance.now() - lastFist > 900) { nextModel(); lastFist = performance.now(); }
+      fistLatch = true; prevPalm = null;
+    } else {
+      fistLatch = false;
+      if (h.pinch) {
+        const [wx, wy] = toWorld(h.pinchPt.x, h.pinchPt.y);
+        state.tpx = wx; state.tpy = wy; active = 'pinch'; prevPalm = null;
+      } else {
+        if (prevPalm) { state.ty += (h.palm.x - prevPalm.x) * 8; state.tx += (h.palm.y - prevPalm.y) * 8; }
+        prevPalm = h.palm; active = h.open ? 'rotate' : null;
+      }
+    }
+  }
+  if (hands.length === 0) { prevPalm = null; fistLatch = false; }
+  state.spin = hands.length === 0;
+  setActive(active);
+}
+
+/* ---------- HUD drawing (skeleton + rings) ---------- */
+const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+function drawHud(hands, t) {
+  const W = hud.width, H = hud.height, dpr = devicePixelRatio;
+  hctx.clearRect(0, 0, W, H);
+  // video is object-fit: cover -> compute visible mapping
+  const v = video, vw = v.videoWidth || 16, vh = v.videoHeight || 9;
+  const s = Math.max(innerWidth / vw, innerHeight / vh), ox = (innerWidth - vw * s) / 2, oy = (innerHeight - vh * s) / 2;
+  const P = p => [(ox + p.x * vw * s) * dpr, (oy + p.y * vh * s) * dpr];
+  for (const h of hands) {
+    const color = h.pinch ? '255,201,77' : h.fist ? '255,110,110' : '79,227,255';
+    hctx.lineWidth = 1.5 * dpr; hctx.strokeStyle = `rgba(${color},.8)`;
+    hctx.beginPath();
+    for (const [a, b] of BONES) { const A = P(h.m[a]), B = P(h.m[b]); hctx.moveTo(...A); hctx.lineTo(...B); }
+    hctx.stroke();
+    hctx.fillStyle = `rgba(${color},1)`;
+    for (const p of h.m) { const [x, y] = P(p); hctx.beginPath(); hctx.arc(x, y, 2.5 * dpr, 0, 7); hctx.fill(); }
+    // rotating HUD rings around palm
+    const [cx, cy] = P(h.palm), r = h.size * vh * s * dpr * 1.6;
+    hctx.strokeStyle = `rgba(${color},.55)`; hctx.lineWidth = 1.2 * dpr;
+    hctx.beginPath(); hctx.arc(cx, cy, r, 0, 7); hctx.stroke();
+    hctx.setLineDash([6 * dpr, 10 * dpr]); hctx.lineDashOffset = -t * 0.05;
+    hctx.beginPath(); hctx.arc(cx, cy, r * 1.15, 0, 7); hctx.stroke(); hctx.setLineDash([]);
+    for (let k = 0; k < 4; k++) { // tick marks
+      const a = t * 0.001 + k * Math.PI / 2;
+      hctx.beginPath(); hctx.moveTo(cx + Math.cos(a) * r * 0.92, cy + Math.sin(a) * r * 0.92);
+      hctx.lineTo(cx + Math.cos(a) * r * 1.08, cy + Math.sin(a) * r * 1.08); hctx.stroke();
+    }
+  }
+}
+
+/* ---------- Camera + detection loop ---------- */
+const video = document.getElementById('video');
+let landmarker = null, lastVideoTime = -1, hands = [];
+
+async function startCamera() {
+  document.getElementById('go').textContent = 'Chargement…';
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1280, height: 720 } });
+    video.srcObject = stream; await video.play();
+    const fileset = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+    landmarker = await HandLandmarker.createFromOptions(fileset, {
+      baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task', delegate: 'GPU' },
+      runningMode: 'VIDEO', numHands: 2,
+    });
+    document.getElementById('camDot').classList.add('on'); document.getElementById('camTxt').textContent = 'on';
+    document.getElementById('start').remove();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('go').textContent = 'Caméra indisponible';
+    document.querySelector('#start p').textContent = 'Impossible d\'accéder à la caméra (' + (e.name || e.message) + '). Utilise HTTPS ou localhost, ou continue à la souris.';
+  }
+}
+document.getElementById('go').onclick = startCamera;
+document.getElementById('mouse').onclick = () => { document.getElementById('start').remove(); enableMouse(); };
+
+/* ---------- Mouse fallback ---------- */
+function enableMouse() {
+  let drag = null;
+  canvas.style.cursor = 'grab';
+  canvas.onpointerdown = e => { drag = { x: e.clientX, y: e.clientY }; state.spin = false; };
+  addEventListener('pointerup', () => { drag = null; state.spin = true; });
+  addEventListener('pointermove', e => {
+    if (!drag) return;
+    state.ty += (e.clientX - drag.x) * 0.01; state.tx += (e.clientY - drag.y) * 0.01; drag = { x: e.clientX, y: e.clientY };
+  });
+  addEventListener('wheel', e => { state.tScale = THREE.MathUtils.clamp(state.tScale * (e.deltaY > 0 ? 0.92 : 1.08), 0.3, 3); });
+  canvas.ondblclick = nextModel;
+  modelEl.textContent += ' · double-clic pour changer';
+}
+
+/* ---------- Main loop ---------- */
+let frames = 0, fpsT = performance.now();
+function loop(t) {
+  requestAnimationFrame(loop);
+  if (landmarker && video.readyState >= 2 && video.currentTime !== lastVideoTime) {
+    lastVideoTime = video.currentTime;
+    const res = landmarker.detectForVideo(video, t);
+    hands = (res.landmarks || []).map(analyze);
+    handleHands(hands);
+  }
+  drawHud(hands, t);
+
+  // morph particles toward target shape
+  for (let i = 0; i < pos.length; i++) pos[i] += (target[i] - pos[i]) * 0.06;
+  geo.attributes.position.needsUpdate = true;
+
+  if (state.spin) state.ty += 0.004;
+  state.rx += (state.tx - state.rx) * 0.15; state.ry += (state.ty - state.ry) * 0.15;
+  state.scale += (state.tScale - state.scale) * 0.15;
+  state.px += (state.tpx - state.px) * 0.15; state.py += (state.tpy - state.py) * 0.15;
+  obj.rotation.set(state.rx, state.ry, 0);
+  obj.scale.setScalar(state.scale);
+  obj.position.set(state.px, state.py, 0);
+  renderer.render(scene, camera);
+
+  frames++;
+  if (t - fpsT > 1000) { document.getElementById('fpsTxt').textContent = frames; frames = 0; fpsT = t; }
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
